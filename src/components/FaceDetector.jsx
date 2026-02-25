@@ -1,170 +1,190 @@
 import { useEffect, useRef, useState } from "react";
 import {
-    FaceLandmarker,
-    FilesetResolver,
+  FaceLandmarker,
+  FilesetResolver,
 } from "@mediapipe/tasks-vision";
 import "../styles/face.scss";
 
 export default function FaceDetection() {
-    const videoRef = useRef(null);
-    const canvasRef = useRef(null);
-    const landmarkerRef = useRef(null);
-    const animationRef = useRef(null);
+  const videoRef = useRef(null);
+  const landmarkerRef = useRef(null);
+  const animationRef = useRef(null);
+  const emotionBufferRef = useRef([]);
 
-    const [emotion, setEmotion] = useState("Neutral 😐");
-    const [faceDetected, setFaceDetected] = useState(false);
-    const [running, setRunning] = useState(false);
+  const [emotion, setEmotion] = useState("Neutral 😐");
+  const [faceDetected, setFaceDetected] = useState(false);
+  const [running, setRunning] = useState(false);
 
-    useEffect(() => {
-        initializeCamera();
-        initializeModel();
+  useEffect(() => {
+    initializeCamera();
+    initializeModel();
 
-        return () => {
-            if (animationRef.current)
-                cancelAnimationFrame(animationRef.current);
-        };
-    }, []);
+    return () => {
+      if (animationRef.current)
+        cancelAnimationFrame(animationRef.current);
+    };
+  }, []);
 
-    // 🎥 Start Camera
-    const initializeCamera = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-        });
-        videoRef.current.srcObject = stream;
+  // 🎥 Initialize Camera
+  const initializeCamera = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+    });
+    videoRef.current.srcObject = stream;
+  };
+
+  // 🧠 Load MediaPipe Model (WITH blendshapes support)
+  const initializeModel = async () => {
+    const vision = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
+    );
+
+    landmarkerRef.current =
+      await FaceLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath:
+            "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+        },
+        runningMode: "VIDEO",
+        numFaces: 1,
+        outputFaceBlendshapes: true,
+      });
+  };
+
+  // 🧠 Advanced Emotion Logic
+  const getEmotionFromBlendshapes = (blendshapes) => {
+    if (!blendshapes || blendshapes.length === 0)
+      return "Neutral 😐";
+
+    const categories = blendshapes[0].categories;
+
+    const getScore = (name) =>
+      categories.find((c) => c.categoryName === name)?.score || 0;
+
+    // Core muscle groups
+    const smile =
+      (getScore("mouthSmileLeft") +
+        getScore("mouthSmileRight")) / 2;
+
+    const frown =
+      (getScore("mouthFrownLeft") +
+        getScore("mouthFrownRight")) / 2;
+
+    const browDown =
+      (getScore("browDownLeft") +
+        getScore("browDownRight")) / 2;
+
+    const browInnerUp = getScore("browInnerUp");
+
+    const browOuterUp =
+      (getScore("browOuterUpLeft") +
+        getScore("browOuterUpRight")) / 2;
+
+    const jawOpen = getScore("jawOpen");
+
+    const mouthPress =
+      (getScore("mouthPressLeft") +
+        getScore("mouthPressRight")) / 2;
+
+    // Weighted scoring
+    const happyScore = smile * 0.7;
+    const sadScore = frown * 0.6 + browInnerUp * 0.4;
+    const angryScore = browDown * 0.6 + mouthPress * 0.4;
+    const surpriseScore = browOuterUp * 0.5 + jawOpen * 0.5;
+
+    const emotionScores = {
+      "Happy 😊": happyScore,
+      "Sad 😢": sadScore,
+      "Angry 😠": angryScore,
+      "Surprised 😮": surpriseScore,
     };
 
-    // 🧠 Load MediaPipe Model
-    const initializeModel = async () => {
-        const vision = await FilesetResolver.forVisionTasks(
-            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
+    const detectedEmotion = Object.entries(emotionScores)
+      .sort((a, b) => b[1] - a[1])[0];
+
+    if (detectedEmotion[1] < 0.4)
+      return "Neutral 😐";
+
+    return detectedEmotion[0];
+  };
+
+  // 🔄 Real-time Detection Loop
+  const detectFrame = () => {
+    const video = videoRef.current;
+
+    if (!landmarkerRef.current || !video) return;
+
+    const results =
+      landmarkerRef.current.detectForVideo(
+        video,
+        Date.now()
+      );
+
+    if (results.faceLandmarks.length > 0) {
+      setFaceDetected(true);
+
+      const emotionDetected =
+        getEmotionFromBlendshapes(
+          results.faceBlendshapes
         );
 
-        landmarkerRef.current =
-            await FaceLandmarker.createFromOptions(vision, {
-                baseOptions: {
-                    modelAssetPath:
-                        "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-                },
-                runningMode: "VIDEO",
-                numFaces: 1,
-                outputFaceBlendshapes: true,
-            });
-    };
+      // 🧠 Emotion smoothing (10-frame buffer)
+      emotionBufferRef.current.push(emotionDetected);
 
-    // 😊 Emotion Logic
-    const getEmotionFromBlendshapes = (blendshapes) => {
-        if (!blendshapes || blendshapes.length === 0)
-            return "Neutral 😐";
+      if (emotionBufferRef.current.length > 10)
+        emotionBufferRef.current.shift();
 
-        const categories = blendshapes[0].categories;
+      const emotionCount = {};
 
-        const getScore = (name) =>
-            categories.find((c) => c.categoryName === name)?.score || 0;
+      emotionBufferRef.current.forEach((emo) => {
+        emotionCount[emo] =
+          (emotionCount[emo] || 0) + 1;
+      });
 
-        const smile =
-            (getScore("mouthSmileLeft") +
-                getScore("mouthSmileRight")) / 2;
+      const stableEmotion = Object.entries(
+        emotionCount
+      ).sort((a, b) => b[1] - a[1])[0][0];
 
-        const frown =
-            (getScore("mouthFrownLeft") +
-                getScore("mouthFrownRight")) / 2;
+      setEmotion(stableEmotion);
+    } else {
+      setFaceDetected(false);
+      setEmotion("No Face ❌");
+    }
 
-        const browDown =
-            (getScore("browDownLeft") +
-                getScore("browDownRight")) / 2;
+    animationRef.current =
+      requestAnimationFrame(detectFrame);
+  };
 
+  // ▶ Start Detection
+  const startDetection = () => {
+    setRunning(true);
+    detectFrame();
+  };
 
-        if (smile > 0.6) return "Happy 😊";
-        if (frown > 0.5) return "Sad 😢";
-        if (browDown > 0.6) return "Angry 😠";
+  return (
+    <div className="face-container">
+      <div className="video-wrapper">
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+        />
+      </div>
 
-        return "Neutral 😐";
-    };
+      <div className="info-panel">
+        <h2>Face Emotion Detector</h2>
+        <p>
+          Face Status:{" "}
+          {faceDetected ? "Detected ✅" : "Not Found ❌"}
+        </p>
+        <p>Expression: {emotion}</p>
 
-    // 🔄 Detection Loop
-    const detectFrame = () => {
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
-
-        if (!landmarkerRef.current) return;
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        const results =
-            landmarkerRef.current.detectForVideo(
-                video,
-                Date.now()
-            );
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (results.faceLandmarks.length > 0) {
-            setFaceDetected(true);
-
-            const emotionDetected =
-                getEmotionFromBlendshapes(
-                    results.faceBlendshapes
-                );
-
-            setEmotion(emotionDetected);
-
-            // Draw landmarks
-            results.faceLandmarks.forEach((landmarks) => {
-                landmarks.forEach((point) => {
-                    ctx.beginPath();
-                    ctx.arc(
-                        point.x * canvas.width,
-                        point.y * canvas.height,
-                        2,
-                        0,
-                        2 * Math.PI
-                    );
-                    ctx.fillStyle = "#00ff88";
-                    ctx.fill();
-                });
-            });
-        } else {
-            setFaceDetected(false);
-            setEmotion("No Face ❌");
-        }
-
-        animationRef.current =
-            requestAnimationFrame(detectFrame);
-    };
-
-    // ▶ Start Detection
-    const startDetection = () => {
-        setRunning(true);
-        detectFrame();
-    };
-
-    return (
-        <div className="face-container">
-            <div className="video-wrapper">
-                <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                />
-                <canvas ref={canvasRef} />
-            </div>
-
-            <div className="info-panel">
-                <h2>Face Emotion Detector</h2>
-                <p>
-                    Face Status:{" "}
-                    {faceDetected ? "Detected ✅" : "Not Found ❌"}
-                </p>
-                <p>Expression: {emotion}</p>
-
-                {!running && (
-                    <button onClick={startDetection}>
-                        Start Detection
-                    </button>
-                )}
-            </div>
-        </div>
-    );
+        { (
+          <button onClick={startDetection}>
+            Start Detection
+          </button>
+        )}
+      </div>
+    </div>
+  );
 }
