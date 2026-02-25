@@ -1,0 +1,64 @@
+$bg: #0f172a;
+$card: #1e293b;
+$success: #22c55e;
+$danger: #ef4444;
+
+body {
+  margin: 0;
+  background: $bg;
+  font-family: "Segoe UI", sans-serif;
+  color: white;
+}
+
+.app {
+  text-align: center;
+  padding: 30px;
+
+  h1 {
+    margin-bottom: 25px;
+  }
+}
+
+.camera-wrapper {
+  position: relative;
+  width: 640px;
+  height: 480px;
+  margin: auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background: $card;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+
+  video,
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 640px;
+    height: 480px;
+  }
+
+  video {
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  canvas {
+    z-index: 2;
+    pointer-events: none;
+  }
+}
+
+.status {
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: 600;
+
+  &.active {
+    color: $success;
+  }
+
+  &.inactive {
+    color: $danger;
+  }
+}
