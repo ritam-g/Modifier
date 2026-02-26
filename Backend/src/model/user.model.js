@@ -16,5 +16,5 @@ const userSchema=new mongoose.Schema({
         required:[true,"email is required"],
         unique:[true,"email is alredy exiest"]
     }
-})
+},{timestamps:true})
 module.exports=mongoose.model("user",userSchema)
