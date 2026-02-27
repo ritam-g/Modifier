@@ -1,6 +1,7 @@
 const userModel = require("../model/user.model")
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const blacklistModel = require("../model/blacklist.model")
 
 // hash password helper
 async function hashPassword(password) {
@@ -44,7 +45,9 @@ async function userRegiestrationController(req, res) {
         })
     }
 }
-
+/**
+ * user login controller 
+ */
 async function userLoginController(req, res) {
     try {
         const { email, password } = req.body
@@ -52,7 +55,7 @@ async function userLoginController(req, res) {
             return res.status(400).json({ message: 'email and password are required' })
         }
 
-        const user = await userModel.findOne({ email })
+        const user = await userModel.findOne({ email }).select("+password")
         if (!user) {
             return res.status(401).json({ message: 'invalid credentials' })
         }
@@ -65,16 +68,24 @@ async function userLoginController(req, res) {
         // generate JWT
         const payload = { id: user._id, email: user.email }
         const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' })
-        res.cookie('token',token)
+        res.cookie('token', token)
         return res.status(200).json({
             message: 'login successful',
-            token
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
         })
     } catch (err) {
         console.error(err)
         return res.status(500).json({ message: 'something went wrong' })
     }
 }
+/**
+ * 
+ * user details controller
+ */
 async function getMeController(req, res) {
     try {
         const user = await userModel.findById(req.user.id)
@@ -84,15 +95,37 @@ async function getMeController(req, res) {
             })
         }
         return res.status(200).json({
-            message:'user is authorize to get acess',
+            message: 'user is authorize to get acess',
             user
         })
     } catch (err) {
         console.log(err);
-        
+
         return res.status(404).json({
             message: 'something went worng '
         })
     }
 }
-module.exports = { userRegiestrationController, userLoginController,getMeController }
+/**
+ * 
+ * user logout controller
+ */
+async function logOutController(req, res) {
+    try {
+        const token = req.cookies.token
+        res.clearCookie("token")
+        await blacklistModel.create({
+            token
+        })
+        return res.status(200).json({
+            message:'logout sucessfully '
+        })
+    } catch (err) {
+        console.log(err);
+        return res.status(404).json({
+            message: 'somtign went wrong '
+        })
+
+    }
+}
+module.exports = {logOutController, userRegiestrationController, userLoginController, getMeController }
