@@ -2,6 +2,7 @@ const userModel = require("../model/user.model")
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const blacklistModel = require("../model/blacklist.model")
+const redis = require("../config/cache")
 
 // hash password helper
 async function hashPassword(password) {
@@ -64,7 +65,8 @@ async function userLoginController(req, res) {
         if (!isMatch) {
             return res.status(401).json({ message: 'invalid credentials' })
         }
-
+        //! token set in redis 
+        await redis.set(token, Date.now().toString())
         // generate JWT
         const payload = { id: user._id, email: user.email }
         const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' })
@@ -118,7 +120,7 @@ async function logOutController(req, res) {
             token
         })
         return res.status(200).json({
-            message:'logout sucessfully '
+            message: 'logout sucessfully '
         })
     } catch (err) {
         console.log(err);
@@ -128,4 +130,4 @@ async function logOutController(req, res) {
 
     }
 }
-module.exports = {logOutController, userRegiestrationController, userLoginController, getMeController }
+module.exports = { logOutController, userRegiestrationController, userLoginController, getMeController }
