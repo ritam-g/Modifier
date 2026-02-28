@@ -65,12 +65,12 @@ async function userLoginController(req, res) {
         if (!isMatch) {
             return res.status(401).json({ message: 'invalid credentials' })
         }
-        //! token set in redis 
-        await redis.set(token, Date.now().toString())
+        
         // generate JWT
         const payload = { id: user._id, email: user.email }
         const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' })
         res.cookie('token', token)
+        
         return res.status(200).json({
             message: 'login successful',
             user: {
@@ -116,9 +116,14 @@ async function logOutController(req, res) {
     try {
         const token = req.cookies.token
         res.clearCookie("token")
-        await blacklistModel.create({
-            token
-        })
+        //REVIEW - we dont need this be cuse we redis now 
+
+        // await blacklistModel.create({
+        //     token
+        // })
+        //! token set in redis 
+        await redis.set(token, Date.now().toString())
+        
         return res.status(200).json({
             message: 'logout sucessfully '
         })
