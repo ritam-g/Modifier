@@ -21,9 +21,7 @@ const Register = () => {
         navigate('/')
 
     }
-    if (loading) {
-        return <div className="loading">Loading...</div>
-    }
+    
 
     return (
         <main className="register-page">
