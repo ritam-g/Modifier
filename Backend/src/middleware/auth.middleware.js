@@ -5,7 +5,7 @@ const redis = require('../config/cache');
 async function verifyToken(req, res, next) {
 
     //!{ id: user._id, email: user.email }
-    const token = req.cookies.token
+    const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
     //NOTE - blacklist token checking
     const blackListToken = await redis.get(token)
     if (blackListToken) return res.status(401).json({ message: ' user is unathorize ' })

@@ -8,20 +8,14 @@ import { getEmotionFromBlendshapes } from "../utils/emotion";
 export function useFaceDetection() {
     const videoRef = useRef(null);
     const landmarkerRef = useRef(null);
-    const animationRef = useRef(null);
-    const emotionBufferRef = useRef([]);
 
-    const [emotion, setEmotion] = useState("Neutral 😐");
+    const [emotion, setEmotion] = useState("Neutral");
     const [faceDetected, setFaceDetected] = useState(false);
     const [running, setRunning] = useState(false);
 
     useEffect(() => {
         initializeCamera();
         initializeModel();
-
-        return () => {
-            if (animationRef.current) cancelAnimationFrame(animationRef.current);
-        };
     }, []);
 
     async function initializeCamera() {
@@ -34,69 +28,60 @@ export function useFaceDetection() {
     }
 
     async function initializeModel() {
-        const vision = await FilesetResolver.forVisionTasks(
-            "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
-        );
+        try {
+            const vision = await FilesetResolver.forVisionTasks(
+                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
+            );
 
-        landmarkerRef.current = await FaceLandmarker.createFromOptions(vision, {
-            baseOptions: {
-                modelAssetPath:
-                    "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-            },
-            runningMode: "VIDEO",
-            numFaces: 1,
-            outputFaceBlendshapes: true,
-        });
+            landmarkerRef.current = await FaceLandmarker.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath:
+                        "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                },
+                runningMode: "VIDEO",
+                numFaces: 1,
+                outputFaceBlendshapes: true,
+            });
+        } catch (err) {
+            console.error("model init failed", err);
+        }
     }
 
-    function detectFrame() {
+    function detectOnce() {
         const video = videoRef.current;
-        if (!landmarkerRef.current || !video) return;
+        if (!landmarkerRef.current || !video || video.readyState < 2) {
+            setFaceDetected(false);
+            setEmotion("Camera or model not ready");
+            return;
+        }
 
         const results = landmarkerRef.current.detectForVideo(video, Date.now());
 
         if (results.faceLandmarks.length > 0) {
             setFaceDetected(true);
             const emotionDetected = getEmotionFromBlendshapes(results.faceBlendshapes);
-
-            // smoothing buffer
-            emotionBufferRef.current.push(emotionDetected);
-            if (emotionBufferRef.current.length > 10) emotionBufferRef.current.shift();
-
-            const emotionCount = {};
-            emotionBufferRef.current.forEach((emo) => {
-                emotionCount[emo] = (emotionCount[emo] || 0) + 1;
-            });
-
-            const stableEmotion = Object.entries(emotionCount).sort((a, b) => b[1] - a[1])[0][0];
-            setEmotion(stableEmotion);
+            setEmotion(emotionDetected);
         } else {
             setFaceDetected(false);
-            setEmotion("No Face ❌");
+            setEmotion("No Face");
         }
-
-        animationRef.current = requestAnimationFrame(detectFrame);
     }
 
     function startDetection() {
-        if (!running) {
-            setRunning(true);
-            detectFrame();
+        if (running) return;
+
+        setRunning(true);
+        try {
+            detectOnce();
+        } finally {
+            setRunning(false);
         }
     }
 
     function stopDetection() {
         setRunning(false);
-        if (animationRef.current) {
-            cancelAnimationFrame(animationRef.current);
-            animationRef.current = null;
-        }
-        // reset values
         setFaceDetected(false);
-        setEmotion("Neutral 😐");
-        emotionBufferRef.current = [];
-
-        
+        setEmotion("Neutral");
     }
 
     return {

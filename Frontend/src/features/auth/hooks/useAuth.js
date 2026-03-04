@@ -4,34 +4,57 @@ import { getMe, register, login, logout } from "../services/auth.api";
 
 
 
-export  function useAuth() {
+export function useAuth() {
     const { user, setuser, loading, setloading } = useContext(Context)
     async function loginUser({ email, password }) {
-        setloading(true)
-        const data = await login({ email, password })
-        setuser(data.user)
-        return data.user
+        try {
+            setloading(true)
+            const data = await login({ email, password })
+            setuser(data.user)
+            return data.user
+        } catch (err) {
+            throw err
+        } finally {
+            setloading(false)
+        }
     }
     async function registerUser({ username, password, email }) {
-        setloading(true)
-        const data = await register({ username, password, email })
-        setuser(data.user)
-        setloading(false)
-        return data.user
+        try {
+            setloading(true)
+            const data = await register({ username, password, email })
+            setuser(data.user)
+
+            return data.user
+        } catch (err) {
+            throw err
+        } finally {
+            setloading(false)
+        }
     }
     async function getMeUser() {
-        setloading(true)
-        const data = await getMe()
-        setuser(data.user)
-        setloading(false)
-        return data.user
+        try {
+            setloading(true)
+            const data = await getMe()
+            setuser(data.user)
+            return data.user
+        } catch (error) {
+            setuser(null) // user not logged in
+            return null
+        } finally {
+            setloading(false)
+        }
     }
     async function logoutUser() {
-        setloading(true)
-        const data = await logout()
-        setuser(null)
-        setloading(false)
-        return data.user
+        try {
+            setloading(true)
+            const data = await logout()
+            setuser(null)
+            return data.user
+        } catch (err) {
+            throw err
+        } finally {
+            setloading(false)
+        }
     }
-    return { loginUser, logoutUser, getMeUser, registerUser,loading ,user}
+    return { loginUser, logoutUser, getMeUser, registerUser, loading, user }
 }
