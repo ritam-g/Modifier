@@ -5,8 +5,8 @@ function Checks() {
     const { getSongByMood, song, loading } = useSong()
     async function call() {
         const mood = 'happy'
-        const song = await getSongByMood({ mood })
-        console.log(song);
+        const result = await getSongByMood({ mood })
+        console.log(result.song);
 
     }
     return (

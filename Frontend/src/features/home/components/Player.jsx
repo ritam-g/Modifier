@@ -6,8 +6,15 @@ function formatMoodLabel(mood) {
   return mood.charAt(0).toUpperCase() + mood.slice(1)
 }
 
-function Player({ song, loading, mood, emotion, error }) {
+function isSongActive(activeSong, item) {
+  if (!activeSong || !item) return false
+  if (activeSong._id && item._id) return activeSong._id === item._id
+  return activeSong.url === item.url
+}
+
+function Player({ song, songs = [], onSelectSong, songCount = 0, loading, mood, emotion, error }) {
   const hasSong = Boolean(song && song.url)
+  const hasPlaylist = Array.isArray(songs) && songs.length > 0
 
   return (
     <section className="player-panel panel-enter panel-enter--delay">
@@ -19,6 +26,11 @@ function Player({ song, loading, mood, emotion, error }) {
       <p className="player-panel__subtext">
         Matched with expression: <strong>{emotion || 'Neutral'}</strong>
       </p>
+      {songCount > 0 ? (
+        <p className="player-panel__subtext">
+          Playlist options for this mood: <strong>{songCount}</strong>
+        </p>
+      ) : null}
 
       {loading ? (
         <div className="player-panel__state player-panel__state--loading">
@@ -48,6 +60,30 @@ function Player({ song, loading, mood, emotion, error }) {
             </audio>
           </div>
         </article>
+      ) : null}
+
+      {!loading && !error && hasPlaylist ? (
+        <section className="player-panel__playlist">
+          <p className="player-panel__playlist-title">Mood Playlist</p>
+          <div className="player-panel__playlist-list">
+            {songs.map((item, index) => {
+              const active = isSongActive(song, item)
+
+              return (
+                <button
+                  key={item._id || item.url || index}
+                  type="button"
+                  className={`player-panel__playlist-item ${active ? 'is-active' : ''}`}
+                  onClick={() => onSelectSong?.(item)}
+                >
+                  <span className="player-panel__playlist-index">{index + 1}</span>
+                  <span className="player-panel__playlist-name">{item.title || 'Untitled Track'}</span>
+                  <span className="player-panel__playlist-mood">{formatMoodLabel(item.mood || mood)}</span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
       ) : null}
 
       {!loading && !error && !hasSong ? (

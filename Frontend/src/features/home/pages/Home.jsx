@@ -17,7 +17,7 @@ function mapEmotionToMood(emotionLabel = '') {
 }
 
 function Home() {
-    const { getSongByMood, song, loading, error } = useSong()
+    const { getSongByMood, selectSong, song, songs, loading, error } = useSong()
     const [detectedEmotion, setDetectedEmotion] = useState('Neutral')
     const [activeMood, setActiveMood] = useState('Neutral')
     const [statusText, setStatusText] = useState('Detect once to sync your mood with a matching song.')
@@ -48,11 +48,12 @@ function Home() {
         setStatusText(`Emotion captured: ${nextEmotion}. Loading a ${mood} track...`)
 
         try {
-            const fetchedSong = await getSongByMood({ mood })
+            const { song: fetchedSong, songs: fetchedSongs } = await getSongByMood({ mood })
+            const totalSongs = fetchedSongs.length
 
             if (fetchedSong) {
-                setStatusText(`Ready. Enjoy your ${mood} playlist match.`)
-                toast.success(`Loaded ${mood} song.`)
+                setStatusText(`Ready. ${totalSongs} ${mood} songs found, now playing one.`)
+                toast.success(`Loaded ${mood} song from ${totalSongs} options.`)
             } else {
                 setStatusText(`No ${mood} track available yet. Try another expression.`)
                 toast('No matching song found for this mood.')
@@ -77,6 +78,9 @@ function Home() {
                 <FaceDetection onDetect={handleFaceDetection} busy={loading} />
                 <Player
                     song={song}
+                    songs={songs}
+                    onSelectSong={selectSong}
+                    songCount={songs.length}
                     loading={loading}
                     mood={activeMood}
                     emotion={detectedEmotion}

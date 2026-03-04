@@ -2,6 +2,24 @@ const id3 = require('node-id3')
 const songModel = require('../model/song.model')
 const { uplodeFile } = require('../services/storage.service')
 
+function escapeRegex(value = '') {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function getMoodVariants(mood = '') {
+    const normalizedMood = mood.trim().toLowerCase()
+    const aliasMap = {
+        happy: ['happy'],
+        sad: ['sad'],
+        angry: ['angry'],
+        neutral: ['neutral'],
+        surprised: ['surprised', 'surprized'],
+        surprized: ['surprized', 'surprised'],
+    }
+
+    return aliasMap[normalizedMood] || [normalizedMood]
+}
+
 async function CreateSongController(req, res) {
     try {
         const songBuffer = req.file.buffer
@@ -38,13 +56,21 @@ async function CreateSongController(req, res) {
 }
 async function getSongController(req, res) {
     try {
-        const {mood}=req.query
-        const song=await songModel.findOne({
-            mood
-        })
+        const mood = String(req.query.mood || '').trim()
+        if (!mood) {
+            return res.status(400).json({ message: 'mood query is required' })
+        }
+
+        const moodVariants = getMoodVariants(mood)
+        const moodRegexes = moodVariants.map((variant) => new RegExp(`^${escapeRegex(variant)}$`, 'i'))
+        const songs = await songModel.find({
+            mood: { $in: moodRegexes }
+        }).sort({ createdAt: -1 })
+
         return res.status(200).json({
-            message:'song fetched successfully',
-            song
+            message: 'songs fetched successfully',
+            total: songs.length,
+            songs
         })
     } catch (err) {
         console.log(err);
