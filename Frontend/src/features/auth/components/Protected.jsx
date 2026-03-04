@@ -14,7 +14,6 @@ function Protected({ children }) {
     }, [])
 
     useEffect(() => {
-        
         if (!loading && !user) {
             navigate('/login')
         }

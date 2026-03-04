@@ -19,7 +19,7 @@ app.use(cookieParser())
 app.use('/api/auth', authRoute);
 
 //song making route
-app.use('/api/song',songRoute)
+app.use('/api/song', songRoute)
 // health check
 app.get('/api/health', (req, res) => res.send({ status: 'ok' }));
 

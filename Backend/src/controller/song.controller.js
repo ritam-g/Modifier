@@ -1,7 +1,8 @@
 const id3 = require('node-id3')
 const songModel = require('../model/song.model')
 const { uplodeFile } = require('../services/storage.service')
-async function songController(req, res) {
+
+async function CreateSongController(req, res) {
     try {
         const songBuffer = req.file.buffer
         const tags = id3.read(songBuffer)
@@ -35,5 +36,19 @@ async function songController(req, res) {
         res.status(500).json({ error: err.message })
     }
 }
-
-module.exports = songController
+async function getSongController(req, res) {
+    try {
+        const {mood}=req.query
+        const song=await songModel.findOne({
+            mood
+        })
+        return res.status(200).json({
+            message:'song fetched successfully',
+            song
+        })
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message })
+    }
+}
+module.exports = { CreateSongController, getSongController }
