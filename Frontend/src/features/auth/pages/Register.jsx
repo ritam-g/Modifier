@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import FormGroup from '../components/FromGroup'
 import '../style/register.scss'
 import { useAuth } from '../hooks/useAuth'
@@ -16,9 +16,19 @@ const Register = () => {
     async function handleSubmit(e) {
         e.preventDefault()
 
-        await registerUser({ username, password, email })
-       
-        navigate('/')
+        if (!username || !email || !password) {
+            toast.error('Name, email, and password are required.')
+            return
+        }
+
+        try {
+            await registerUser({ username, password, email })
+            toast.success('Account created successfully.')
+            navigate('/')
+        } catch (err) {
+            const message = err?.response?.data?.message || err?.response?.data?.error || 'Registration failed.'
+            toast.error(message)
+        }
 
     }
     
@@ -27,22 +37,39 @@ const Register = () => {
         <main className="register-page">
             <div className="form-container">
                 <h1>Register</h1>
+                <p className="auth-subtitle">Create your account to unlock mood playlists.</p>
                 <form onSubmit={handleSubmit} >
                     <FormGroup
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        label="Name" placeholder="Enter your name" />
+                        label="Name"
+                        name="name"
+                        autoComplete="name"
+                        placeholder="Enter your name"
+                    />
                     <FormGroup
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        label="Email" placeholder="Enter your email" />
+                        label="Email"
+                        type="email"
+                        name="email"
+                        autoComplete="email"
+                        placeholder="Enter your email"
+                    />
                     <FormGroup
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        label="Password" placeholder="Enter your password" />
-                    <button className='button' type="submit">Register</button>
+                        label="Password"
+                        type="password"
+                        name="password"
+                        autoComplete="new-password"
+                        placeholder="Enter your password"
+                    />
+                    <button className='button' type="submit" disabled={loading}>
+                        {loading ? 'Creating account...' : 'Register'}
+                    </button>
                 </form>
-                <p>Already have an account? <Link to="/login">Login here</Link></p>
+                <p className="auth-switch">Already have an account? <Link to="/login">Login here</Link></p>
             </div>
         </main>
     )

@@ -8,6 +8,7 @@ import { getEmotionFromBlendshapes } from "../utils/emotion";
 export function useFaceDetection() {
     const videoRef = useRef(null);
     const landmarkerRef = useRef(null);
+    const streamRef = useRef(null);
 
     const [emotion, setEmotion] = useState("Neutral");
     const [faceDetected, setFaceDetected] = useState(false);
@@ -16,11 +17,18 @@ export function useFaceDetection() {
     useEffect(() => {
         initializeCamera();
         initializeModel();
+
+        return () => {
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach((track) => track.stop());
+            }
+        };
     }, []);
 
     async function initializeCamera() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            streamRef.current = stream;
             if (videoRef.current) videoRef.current.srcObject = stream;
         } catch (err) {
             console.error("camera init failed", err);
@@ -49,30 +57,44 @@ export function useFaceDetection() {
 
     function detectOnce() {
         const video = videoRef.current;
+
         if (!landmarkerRef.current || !video || video.readyState < 2) {
-            setFaceDetected(false);
-            setEmotion("Camera or model not ready");
-            return;
+            const fallback = { faceDetected: false, emotion: "Camera or model not ready" };
+            setFaceDetected(fallback.faceDetected);
+            setEmotion(fallback.emotion);
+            return fallback;
         }
 
-        const results = landmarkerRef.current.detectForVideo(video, Date.now());
+        try {
+            const results = landmarkerRef.current.detectForVideo(video, Date.now());
 
-        if (results.faceLandmarks.length > 0) {
-            setFaceDetected(true);
-            const emotionDetected = getEmotionFromBlendshapes(results.faceBlendshapes);
-            setEmotion(emotionDetected);
-        } else {
-            setFaceDetected(false);
-            setEmotion("No Face");
+            if (results.faceLandmarks.length > 0) {
+                const emotionDetected = getEmotionFromBlendshapes(results.faceBlendshapes);
+                const output = { faceDetected: true, emotion: emotionDetected };
+                setFaceDetected(output.faceDetected);
+                setEmotion(output.emotion);
+                return output;
+            }
+
+            const noFace = { faceDetected: false, emotion: "No Face" };
+            setFaceDetected(noFace.faceDetected);
+            setEmotion(noFace.emotion);
+            return noFace;
+        } catch (err) {
+            console.error("detection failed", err);
+            const failure = { faceDetected: false, emotion: "Detection failed" };
+            setFaceDetected(failure.faceDetected);
+            setEmotion(failure.emotion);
+            return failure;
         }
     }
 
-    function startDetection() {
-        if (running) return;
+    async function startDetection() {
+        if (running) return null;
 
         setRunning(true);
         try {
-            detectOnce();
+            return detectOnce();
         } finally {
             setRunning(false);
         }
