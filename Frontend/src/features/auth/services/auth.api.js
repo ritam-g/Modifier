@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { API_ROOT } from '../../../config/api'
 
 const api = axios.create({
-    baseURL: 'https://modifier.onrender.com/api/auth',
+    baseURL: `${API_ROOT}/auth`,
     withCredentials: true
 })
 

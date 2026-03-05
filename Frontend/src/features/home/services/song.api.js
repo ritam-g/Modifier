@@ -1,8 +1,9 @@
 import axios from "axios";
+import { API_ROOT } from "../../../config/api";
 
-const api=axios.create({
-    baseURL:'https://modifier.onrender.com/api/song',
-    withCredentials:true
+const api = axios.create({
+    baseURL: `${API_ROOT}/song`,
+    withCredentials: true
 })
 
 export async function getSong({mood}) {

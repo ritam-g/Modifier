@@ -1,7 +1,8 @@
-﻿import axios from 'axios'
+import axios from 'axios'
+import { API_ROOT } from '../../../config/api'
 
 const api = axios.create({
-    baseURL: 'http://localhost:3000/api/song',
+    baseURL: `${API_ROOT}/song`,
     withCredentials: true,
 })
 
@@ -28,3 +29,4 @@ export async function uploadMultipleSongs({ files, mood }) {
 
     return response.data
 }
+
