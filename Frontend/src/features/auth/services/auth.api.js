@@ -1,8 +1,7 @@
 import axios from 'axios'
-import { API_ROOT } from '../../../config/api'
 
 const api = axios.create({
-    baseURL: `${API_ROOT}/auth`,
+    baseURL: 'http://localhost:3000/api/auth',
     withCredentials: true
 })
 
