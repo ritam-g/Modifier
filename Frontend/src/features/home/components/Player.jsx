@@ -1,8 +1,10 @@
-import React from 'react'
+﻿import React, { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 
 function formatMoodLabel(mood) {
   if (!mood) return 'Neutral'
-  if (mood.toLowerCase() === 'surprized') return 'Surprized'
+  if (mood.toLowerCase() === 'surprised') return 'Surprised'
+  if (mood.toLowerCase() === 'surprized') return 'Surprised'
   return mood.charAt(0).toUpperCase() + mood.slice(1)
 }
 
@@ -12,9 +14,55 @@ function isSongActive(activeSong, item) {
   return activeSong.url === item.url
 }
 
-function Player({ song, songs = [], onSelectSong, songCount = 0, loading, mood, emotion, error }) {
+function Player({
+  song,
+  songs = [],
+  onSelectSong,
+  songCount = 0,
+  loading,
+  mood,
+  emotion,
+  error,
+  isGuest = false,
+  guestExpired = false,
+  onGuestPlaybackStart,
+  onGuestPlaybackStop,
+}) {
+  const audioRef = useRef(null)
   const hasSong = Boolean(song && song.url)
   const hasPlaylist = Array.isArray(songs) && songs.length > 0
+
+  function handlePlay(event) {
+    if (isGuest && guestExpired) {
+      event.currentTarget.pause()
+      return
+    }
+
+    if (isGuest) {
+      onGuestPlaybackStart?.()
+    }
+  }
+
+  function handlePause() {
+    if (isGuest) {
+      onGuestPlaybackStop?.()
+    }
+  }
+
+  useEffect(() => {
+    if (!isGuest || !guestExpired) return
+
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+    }
+
+    onGuestPlaybackStop?.()
+  }, [guestExpired, isGuest, onGuestPlaybackStop])
+
+  useEffect(() => () => {
+    onGuestPlaybackStop?.()
+  }, [onGuestPlaybackStop])
 
   return (
     <section className="player-panel panel-enter panel-enter--delay">
@@ -55,9 +103,25 @@ function Player({ song, songs = [], onSelectSong, songCount = 0, loading, mood, 
           <div className="player-panel__meta">
             <h3>{song.title || 'Untitled Track'}</h3>
             <p>{formatMoodLabel(song.mood || mood)}</p>
-            <audio controls src={song.url} preload="metadata" className="player-panel__audio">
-              Your browser does not support audio playback.
-            </audio>
+
+            {isGuest && guestExpired ? (
+              <div className="player-panel__state player-panel__state--limit">
+                Guest listening limit reached. <Link to="/login">Login</Link> or <Link to="/register">register</Link> to continue playback.
+              </div>
+            ) : (
+              <audio
+                ref={audioRef}
+                controls
+                src={song.url}
+                preload="metadata"
+                className="player-panel__audio"
+                onPlay={handlePlay}
+                onPause={handlePause}
+                onEnded={handlePause}
+              >
+                Your browser does not support audio playback.
+              </audio>
+            )}
           </div>
         </article>
       ) : null}

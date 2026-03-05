@@ -1,184 +1,195 @@
-@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Syne:wght@600;700&display=swap");
+﻿@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+
+$accent: #0e9d79;
+$accent-dark: #0b7a5f;
+$navy: #0e2d38;
+$text: #2d4a53;
+$border: rgba(14, 34, 42, 0.14);
 
 .login-page {
-    position: relative;
-    isolation: isolate;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
-    padding: 1rem;
-    overflow: hidden;
-    font-family: "Sora", "Nunito Sans", sans-serif;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
     background:
-        radial-gradient(circle at 12% 10%, rgba(14, 157, 121, 0.2), transparent 32%),
-        radial-gradient(circle at 82% 16%, rgba(255, 150, 92, 0.2), transparent 34%),
+        radial-gradient(circle at 12% 10%, rgba(14, 157, 121, 0.22), transparent 34%),
+        radial-gradient(circle at 88% 16%, rgba(255, 150, 92, 0.2), transparent 34%),
         linear-gradient(140deg, #ecf7f4 0%, #fff7ec 100%);
+    font-family: 'Sora', sans-serif;
+}
 
-    &::before,
-    &::after {
-        content: "";
-        position: absolute;
-        width: 28rem;
-        height: 28rem;
-        border-radius: 999px;
-        filter: blur(40px);
-        opacity: 0.32;
-        z-index: -1;
-        animation: auth-orb-float 14s ease-in-out infinite;
+.login-left-panel,
+.login-right-panel {
+    padding: clamp(1.2rem, 3vw, 2.2rem);
+}
+
+.login-left-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.2rem;
+}
+
+.login-brand {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.45rem;
+    letter-spacing: -0.02em;
+    color: $navy;
+}
+
+.login-left-headline {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5.8vw, 3.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    color: $navy;
+}
+
+.login-left-sub {
+    margin-top: 0.9rem;
+    max-width: 520px;
+    color: $text;
+    line-height: 1.7;
+}
+
+.login-left-mood-row {
+    margin-top: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.login-chip {
+    border: 1px solid $border;
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    background: rgba(255, 255, 255, 0.65);
+    font-size: 0.82rem;
+    color: $text;
+
+    &.is-active {
+        border-color: rgba(14, 157, 121, 0.5);
+        background: rgba(14, 157, 121, 0.12);
+        color: $accent-dark;
+        font-weight: 700;
+    }
+}
+
+.login-right-panel {
+    display: grid;
+    place-items: center;
+}
+
+.form-container {
+    width: min(440px, 100%);
+    border-radius: 20px;
+    border: 1px solid $border;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 24px 52px rgba(8, 41, 50, 0.16);
+    padding: 1.6rem;
+
+    h2 {
+        font-family: 'Syne', sans-serif;
+        font-size: 2rem;
+        color: $navy;
+    }
+}
+
+.auth-subtitle {
+    margin-top: 0.25rem;
+    color: $text;
+    font-size: 0.93rem;
+}
+
+form {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.42rem;
+
+    label {
+        font-size: 0.9rem;
+        color: #1f4e5d;
+        font-weight: 500;
     }
 
-    &::before {
-        top: -12rem;
-        left: -8rem;
-        background: #4bd9b0;
-    }
+    input {
+        padding: 0.76rem 0.8rem;
+        border-radius: 0.62rem;
+        outline: none;
+        border: 1px solid rgba(17, 67, 83, 0.18);
+        background: rgba(255, 255, 255, 0.96);
+        color: #173f4d;
 
-    &::after {
-        right: -8rem;
-        bottom: -12rem;
-        background: #ffb489;
-        animation-delay: -7s;
-    }
-
-    .form-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        width: min(440px, 100%);
-        padding: 2rem 1.7rem;
-        border-radius: 1.1rem;
-        border: 1px solid rgba(17, 67, 83, 0.14);
-        background: rgba(255, 255, 255, 0.76);
-        box-shadow: 0 24px 52px rgba(8, 41, 50, 0.16);
-        backdrop-filter: blur(8px);
-        animation: auth-card-in 520ms ease both;
-
-        h1 {
-            font-family: "Syne", "Sora", sans-serif;
-            font-size: 2rem;
-            letter-spacing: 0.01em;
-            color: #113b49;
-        }
-    }
-
-    .auth-subtitle {
-        margin-top: -0.4rem;
-        color: rgba(17, 67, 83, 0.78);
-        font-size: 0.94rem;
-    }
-
-    form {
-        display: flex;
-        flex-direction: column;
-        gap: 0.9rem;
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.42rem;
-
-            label {
-                font-size: 0.9rem;
-                color: #1f4e5d;
-                font-weight: 500;
-            }
-
-            input {
-                padding: 0.76rem 0.8rem;
-                border-radius: 0.62rem;
-                outline: none;
-                border: 1px solid rgba(17, 67, 83, 0.18);
-                background: rgba(255, 255, 255, 0.96);
-                color: #173f4d;
-                transition: border-color 0.18s ease, box-shadow 0.2s ease, transform 0.16s ease;
-
-                &:focus {
-                    border-color: rgba(14, 157, 121, 0.58);
-                    box-shadow: 0 0 0 4px rgba(14, 157, 121, 0.14);
-                    transform: translateY(-1px);
-                }
-            }
-        }
-    }
-
-    .button {
-        margin-top: 0.5rem;
-        border: 0;
-        border-radius: 0.72rem;
-        padding: 0.78rem;
-        font-weight: 600;
-        color: #f5fff9;
-        background: linear-gradient(135deg, #0e9d79 0%, #0b7a5f 100%);
-        cursor: pointer;
-        transition: transform 0.18s ease, box-shadow 0.2s ease, filter 0.16s ease;
-
-        &:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 24px rgba(11, 122, 95, 0.3);
-            filter: saturate(1.05);
-        }
-
-        &:disabled {
-            opacity: 0.65;
-            cursor: not-allowed;
-        }
-    }
-
-    .auth-switch {
-        margin-top: 0.2rem;
-        color: rgba(17, 67, 83, 0.86);
-        font-size: 0.92rem;
-
-        a {
-            color: #0b7a5f;
-            font-weight: 600;
-            text-decoration: none;
-
-            &:hover {
-                text-decoration: underline;
-            }
+        &:focus {
+            border-color: rgba(14, 157, 121, 0.58);
+            box-shadow: 0 0 0 4px rgba(14, 157, 121, 0.14);
         }
     }
 }
 
-@keyframes auth-card-in {
-    from {
-        opacity: 0;
-        transform: translateY(16px) scale(0.985);
-    }
+.button {
+    margin-top: 0.35rem;
+    border: 0;
+    border-radius: 0.72rem;
+    padding: 0.78rem;
+    font-weight: 700;
+    color: #f5fff9;
+    background: linear-gradient(135deg, $accent 0%, $accent-dark 100%);
+    cursor: pointer;
 
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes auth-orb-float {
-    0%,
-    100% {
-        transform: translateY(0) translateX(0);
-    }
-
-    50% {
-        transform: translateY(12px) translateX(6px);
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
     }
 }
 
-@media (max-width: 640px) {
+.auth-switch {
+    margin-top: 0.75rem;
+    color: rgba(17, 67, 83, 0.86);
+    font-size: 0.92rem;
+
+    a {
+        color: #0b7a5f;
+        font-weight: 700;
+        text-decoration: none;
+    }
+}
+
+.auth-alt-link-wrap {
+    margin-top: 0.75rem;
+}
+
+.auth-alt-link {
+    display: inline-flex;
+    text-decoration: none;
+    color: $text;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+@media (max-width: 940px) {
     .login-page {
-        .form-container {
-            padding: 1.45rem 1.1rem;
-        }
+        grid-template-columns: 1fr;
+    }
 
-        .form-container h1 {
-            font-size: 1.72rem;
-        }
+    .login-left-panel {
+        padding-bottom: 0;
+    }
+
+    .login-right-panel {
+        padding-top: 0;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .login-page,
     .login-page * {
         animation: none !important;
         transition: none !important;

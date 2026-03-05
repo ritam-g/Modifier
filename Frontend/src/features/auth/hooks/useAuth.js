@@ -1,60 +1,55 @@
-import { useContext } from "react";
-import { Context } from "../context/AuthContext";
-import { getMe, register, login, logout } from "../services/auth.api";
-
-
+﻿import { useCallback, useContext } from 'react'
+import { Context } from '../context/AuthContext'
+import { getMe, register, login, logout } from '../services/auth.api'
 
 export function useAuth() {
     const { user, setuser, loading, setloading } = useContext(Context)
-    async function loginUser({ email, password }) {
+
+    const loginUser = useCallback(async ({ email, password }) => {
+        setloading(true)
         try {
-            setloading(true)
             const data = await login({ email, password })
             setuser(data.user)
             return data.user
-        } catch (err) {
-            throw err
         } finally {
             setloading(false)
         }
-    }
-    async function registerUser({ username, password, email }) {
+    }, [setloading, setuser])
+
+    const registerUser = useCallback(async ({ username, password, email }) => {
+        setloading(true)
         try {
-            setloading(true)
             const data = await register({ username, password, email })
             setuser(data.user)
-
             return data.user
-        } catch (err) {
-            throw err
         } finally {
             setloading(false)
         }
-    }
-    async function getMeUser() {
+    }, [setloading, setuser])
+
+    const getMeUser = useCallback(async () => {
+        setloading(true)
         try {
-            setloading(true)
             const data = await getMe()
             setuser(data.user)
             return data.user
-        } catch (error) {
-            setuser(null) // user not logged in
+        } catch {
+            setuser(null)
             return null
         } finally {
             setloading(false)
         }
-    }
-    async function logoutUser() {
+    }, [setloading, setuser])
+
+    const logoutUser = useCallback(async () => {
+        setloading(true)
         try {
-            setloading(true)
-            const data = await logout()
+            await logout()
             setuser(null)
-            return data.user
-        } catch (err) {
-            throw err
         } finally {
             setloading(false)
         }
-    }
+    }, [setloading, setuser])
+
     return { loginUser, logoutUser, getMeUser, registerUser, loading, user }
 }

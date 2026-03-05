@@ -1,0 +1,218 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+
+$accent: #0e9d79;
+$accent-dark: #0b7a5f;
+$navy: #0e2d38;
+$text: #2d4a53;
+$border: rgba(14, 34, 42, 0.14);
+
+.upload-page {
+  min-height: 100vh;
+  padding: 2rem 1rem 3rem;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(14, 157, 121, 0.2), transparent 34%),
+    radial-gradient(circle at 88% 15%, rgba(255, 150, 82, 0.2), transparent 34%),
+    linear-gradient(145deg, #ecf8f5 0%, #fff7eb 100%);
+  font-family: 'Sora', sans-serif;
+  color: $navy;
+}
+
+.upload-header {
+  max-width: 720px;
+  margin: 0 auto 1.4rem;
+
+  h1 {
+    margin-top: 0.75rem;
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin-top: 0.6rem;
+    color: $text;
+    line-height: 1.6;
+  }
+}
+
+.upload-back-link {
+  display: inline-flex;
+  text-decoration: none;
+  color: $text;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.upload-card {
+  max-width: 720px;
+  margin: 0 auto;
+  border: 1px solid $border;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 24px 52px rgba(8, 41, 50, 0.15);
+  padding: 1.4rem;
+}
+
+.upload-mode-toggle {
+  display: flex;
+  gap: 0.55rem;
+  background: rgba(14, 45, 56, 0.06);
+  border-radius: 12px;
+  padding: 0.3rem;
+}
+
+.mode-btn {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  background: transparent;
+  font-weight: 700;
+  color: $text;
+  cursor: pointer;
+
+  &.is-active {
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(11, 39, 52, 0.12);
+    color: $navy;
+  }
+}
+
+.upload-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+}
+
+.upload-mood-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mood-btn {
+  border: 1px solid $border;
+  border-radius: 999px;
+  padding: 0.44rem 0.95rem;
+  background: rgba(255, 255, 255, 0.7);
+  color: $text;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &.is-selected {
+    border-color: var(--mood-color);
+    color: var(--mood-color);
+    background: rgba(255, 255, 255, 0.98);
+  }
+}
+
+.dropzone {
+  border: 2px dashed rgba(14, 34, 42, 0.22);
+  border-radius: 14px;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.56);
+  cursor: pointer;
+
+  p {
+    color: $text;
+    font-size: 0.9rem;
+  }
+
+  &.has-files {
+    justify-content: flex-start;
+
+    ul {
+      list-style: none;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+
+      li {
+        border: 1px solid $border;
+        border-radius: 9px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0.46rem 0.55rem;
+        font-size: 0.86rem;
+        text-align: left;
+        color: $text;
+      }
+    }
+  }
+}
+
+.upload-submit {
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, $accent, $accent-dark);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.62;
+    cursor: not-allowed;
+  }
+}
+
+.upload-result {
+  margin-top: 1rem;
+  border: 1px solid rgba(14, 157, 121, 0.32);
+  background: rgba(14, 157, 121, 0.08);
+  border-radius: 12px;
+  padding: 0.72rem 0.85rem;
+  color: #1a5544;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.upload-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.secondary-btn {
+  border: 1px solid $border;
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  background: rgba(255, 255, 255, 0.86);
+  color: $text;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 700px) {
+  .upload-card {
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upload-page * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

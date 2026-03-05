@@ -4,7 +4,7 @@ import { createContext } from 'react'
 export const Context=createContext()
 function AuthContext({children}) {
     const [user, setuser] = useState(null)
-    const [loading, setloading] = useState(true)
+    const [loading, setloading] = useState(false)
   return (
     <Context.Provider value={{user,setuser,loading,setloading}}>
       {children}
