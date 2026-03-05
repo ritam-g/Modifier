@@ -25,19 +25,21 @@ async function CreateSongController(req, res) {
         const songBuffer = req.file.buffer
         const tags = id3.read(songBuffer)
         const { mood } = req.body
-        const file = await uplodeFile(
-            {
-                buffer: songBuffer,
-                filename: tags.title + '.mp3',
-                folder: '/cohort-2/moddifier/song'
-            })
+        const [file, posterFile] = await Promise.all([
+            uplodeFile(
+                {
+                    buffer: songBuffer,
+                    filename: tags.title + '.mp3',
+                    folder: '/cohort-2/moddifier/song'
+                }),
+            uplodeFile(
+                {
+                    buffer: tags.image.imageBuffer,
+                    filename: tags.title + '.jpg',
+                    folder: '/cohort-2/moddifier/poster'
+                })
+        ])
 
-        const posterFile = await uplodeFile(
-            {
-                buffer: tags.image.imageBuffer,
-                filename: tags.title + '.jpg',
-                folder: '/cohort-2/moddifier/poster'
-            })
         const song = await songModel.create({
             url: file.url,
             posterUrl: posterFile.url,
@@ -51,6 +53,53 @@ async function CreateSongController(req, res) {
     } catch (err) {
         console.log(err);
 
+        res.status(500).json({ error: err.message })
+    }
+}
+async function createMultipleSong(req, res) {
+    try {
+
+        const files = req.files
+        const { mood } = req.body
+
+        const createdSongs = []
+        //NOTE - all file details in the files
+        for (const fileItem of files) {
+            //REVIEW - songbuufer for the imgekit 
+            const songBuffer = fileItem.buffer
+            const tags = id3.read(songBuffer)
+            //NOTE - optimize way of uploding file and poster at the same time using promise.all
+            const [file, posterFile] = await Promise.all([
+                uplodeFile({
+                    buffer: songBuffer,
+                    filename: tags.title + '.mp3',
+                    folder: '/cohort-2/moddifier/song'
+                }),
+                uplodeFile({
+                    buffer: tags.image.imageBuffer,
+                    filename: tags.title + '.jpg',
+                    folder: '/cohort-2/moddifier/poster'
+                })
+            ])
+            //REVIEW - individual song creation in loop can be optimized by bulk insert after the loop but for that we need to have all the file and poster url before creating any song document, so we can not do that without making code complex and hard to read, so we will go with this approach for now and can optimize it later if needed
+            const song = await songModel.create({
+                url: file.url,
+                posterUrl: posterFile.url,
+                title: tags.title,
+                mood
+            })
+            //NOTE - its for the user purpost one by one isnter and end of the day show
+            createdSongs.push(song)
+        }
+
+        res.status(201).json({
+            message: "songs created successfully",
+            total: createdSongs.length,
+            songs: createdSongs
+        })
+
+    } catch (err) {
+        console.log(err)
         res.status(500).json({ error: err.message })
     }
 }
@@ -77,4 +126,4 @@ async function getSongController(req, res) {
         res.status(500).json({ error: err.message })
     }
 }
-module.exports = { CreateSongController, getSongController }
+module.exports = { CreateSongController, createMultipleSong, getSongController }

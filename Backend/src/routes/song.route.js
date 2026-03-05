@@ -1,6 +1,6 @@
 const express = require('express');
 const upload = require('../middleware/uplode.middleware');
-const { CreateSongController, getSongController } = require('../controller/song.controller');
+const { CreateSongController, getSongController, createMultipleSong } = require('../controller/song.controller');
 const { verifyToken } = require('../middleware/auth.middleware');
 
 const songRoute=express.Router()
@@ -11,6 +11,12 @@ const songRoute=express.Router()
  */
 
 songRoute.post('/',upload.single('song'),CreateSongController)
+/**
+ * crete multiple song 
+ * this will make song 
+ * 
+ */
+songRoute.post('/multiple',upload.array('songs',20),createMultipleSong)
 /**
  * get song 
  * this will return song 
