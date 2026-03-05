@@ -31,9 +31,9 @@ function Upload() {
         const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
         timeline
-            .from('.upload-header', { y: -30, opacity: 0, duration: 0.5 })
-            .from('.upload-card', { y: 40, opacity: 0, duration: 0.6 }, '-=0.25')
-            .from('.upload-form > *', { y: 14, opacity: 0, stagger: 0.07, duration: 0.35 }, '-=0.2')
+            .from('.upload-header', { y: -30, opacity: 1, duration: 0.5 })
+            .from('.upload-card', { y: 40, opacity: 1, duration: 0.6 }, '-=0.25')
+            .from('.upload-form > *', { y: 14, opacity: 1, stagger: 0.07, duration: 0.35 }, '-=0.2')
 
         return () => timeline.kill()
     }, [])
