@@ -75,7 +75,7 @@ function Home() {
         try {
             const { song: fetchedSong, songs: fetchedSongs } = await getSongByMood({ mood })
             const totalSongs = fetchedSongs.length
-
+            
             if (fetchedSong) {
                 setStatusText(`Ready. ${totalSongs} ${formatMoodLabel(mood)} songs found, now playing one.`)
                 toast.success(`Loaded ${formatMoodLabel(mood)} song from ${totalSongs} options.`)

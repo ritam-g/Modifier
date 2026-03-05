@@ -3,6 +3,8 @@ const cors = require('cors');
 const authRoute = require('./routes/auth.route');
 const cookieParser = require('cookie-parser');
 const songRoute = require('./routes/song.route');
+const path = require("path");
+
 const app = express();
 // built-in middleware
 app.use(express.json());
@@ -14,7 +16,15 @@ app.use(
     })
 );
 app.use(cookieParser())
-
+app.use(express.static('./public'))
+//* UNIVERSAL ROUTE WILL BE HERE which i use to for app.use  
+app.use('*name',(req,res)=>{
+     
+    console.log(__dirname);
+      //__dirname is the locaiton of till backend to src file 
+    res.sendFile(path.join(__dirname,'..','\\public\\index.html'))
+    
+})
 // mount auth routes under versioned API path
 app.use('/api/auth', authRoute);
 
@@ -22,5 +32,6 @@ app.use('/api/auth', authRoute);
 app.use('/api/song', songRoute)
 // health check
 app.get('/api/health', (req, res) => res.send({ status: 'ok' }));
+
 
 module.exports = app;
