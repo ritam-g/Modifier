@@ -13,6 +13,12 @@ function normalizeMood(mood = "") {
     return String(mood).trim().toLowerCase();
 }
 
+function isValidSongPayload(data) {
+    if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+    if (Object.prototype.hasOwnProperty.call(data, "songs") && !Array.isArray(data.songs)) return false;
+    return true;
+}
+
 function pickPlayableSong(songList, lastSongId) {
     if (!Array.isArray(songList) || songList.length === 0) return null;
     if (songList.length === 1) return songList[0];
@@ -52,6 +58,10 @@ export function useSong() {
             setError(null);
 
             const data = await getSong({ mood: moodKey })
+            if (!isValidSongPayload(data)) {
+                throw new Error("Invalid response from song API. Check backend route order and /api/song endpoint.");
+            }
+
             const fetchedSongs = Array.isArray(data?.songs)
                 ? data.songs
                 : data?.song

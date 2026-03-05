@@ -18,7 +18,7 @@ const songSchema = new mongoose.Schema({
         enum: {
             values: ['Happy', 'Angry', 'Sad', 'Neutral','Surprised']
         },
-        default: 'nutral'
+        default: 'Neutral'
     },
 },{ timestamps: true })
 
