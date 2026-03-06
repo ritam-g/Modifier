@@ -9,12 +9,30 @@ const app = express();
 // built-in middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-    cors({
-        origin: true,
-        credentials: true,
-    })
-);
+// CORS configuration – only call once and keep credentials enabled.  When the
+// frontend is deployed to a different origin make sure that origin is added
+// to the list below (you can use an environment variable instead of hard‑coding
+// so your Render configuration can be changed without editing code).
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://modifier.onrender.com',
+  'http://localhost:5174'
+  // add your frontend render URL here if it is different
+  // e.g. 'https://instagram-frontend-12345.onrender.com'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow requests with no origin (e.g. mobile apps, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS policy: origin not allowed'));
+  },
+  credentials: true
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
