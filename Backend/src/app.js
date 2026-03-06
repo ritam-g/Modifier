@@ -38,6 +38,28 @@ app.use('/api/auth', authRoute);
 app.use('/api/song', songRoute);
 app.get('/api/health', (req, res) => res.send({ status: 'ok' }));
 
+// Diagnosis route (REMOVE AFTER FIX)
+app.get('/api/diag', async (req, res) => {
+  const diag = {
+    db: require('mongoose').connection.readyState === 1 ? 'CONNECTED' : 'NOT CONNECTED',
+    env: {
+      HAS_MONGO_URI: !!process.env.MONGO_URI,
+      HAS_JWT_SECRET: !!process.env.JWT_SECRET,
+      HAS_REDIS_HOST: !!process.env.REDIS_HOST,
+      PORT: process.env.PORT,
+      NODE_ENV: process.env.NODE_ENV
+    },
+    redis: 'CHECKING...'
+  };
+  try {
+    await require('./config/cache').set('diag_test', Date.now());
+    diag.redis = 'CONNECTED';
+  } catch (e) {
+    diag.redis = 'ERROR: ' + e.message;
+  }
+  res.json(diag);
+});
+
 // Static files and SPA fallback
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
