@@ -17,7 +17,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174',
-  'https://modifier.onrender.com',
+  'https://modifier-1.onrender.com',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
