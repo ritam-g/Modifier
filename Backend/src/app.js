@@ -42,7 +42,7 @@ app.get('/api/health', (req, res) => res.send({ status: 'ok' }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // SPA fallback route should be last and only for non-API GET requests
-app.get('*', (req, res) => {
+app.get('*any', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
