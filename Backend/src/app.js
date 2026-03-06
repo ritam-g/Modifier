@@ -16,17 +16,16 @@ app.use(express.urlencoded({ extended: true }));
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
+  'http://localhost:5174',
   'https://modifier.onrender.com',
-  'http://localhost:5174'
-  // add your frontend render URL here if it is different
-  // e.g. 'https://instagram-frontend-12345.onrender.com'
-];
+  process.env.FRONTEND_URL
+].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // allow requests with no origin (e.g. mobile apps, curl)
+    // allow requests with no origin (e.g. same-origin, mobile apps, curl)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.some(allowed => origin.startsWith(allowed) || allowed === origin)) {
       return callback(null, true);
     }
     return callback(new Error('CORS policy: origin not allowed'));
@@ -34,19 +33,17 @@ app.use(cors({
   credentials: true
 }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, '..', 'public')));
-
 // mount API routes first
 app.use('/api/auth', authRoute);
 app.use('/api/song', songRoute);
 app.get('/api/health', (req, res) => res.send({ status: 'ok' }));
 
-// SPA fallback route should be last and only for non-API GET requests
-app.use((req, res, next) => {
-    if (req.method !== 'GET') return next();
-    if (req.path.startsWith('/api')) return next();
+// Static files and SPA fallback
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
-    return res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+// SPA fallback route should be last and only for non-API GET requests
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 module.exports = app;

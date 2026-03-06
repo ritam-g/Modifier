@@ -1,8 +1,9 @@
 import axios from 'axios'
-import { API_ROOT } from '../../../config/api'
 
 const api = axios.create({
-    baseURL: `${API_ROOT}/song`,
+    baseURL: import.meta.env.VITE_API_URL
+        ? `${import.meta.env.VITE_API_URL}/song`
+        : '/api/song',
     withCredentials: true,
 })
 
