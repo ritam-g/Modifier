@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "Frontend Responsive Design Standards": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "computedHash": "7b16cf170e7701494d246e48cfb968ed8ef11cd3ce83c99ed6b914b1ca302e07"
+    },
+    "font-pairing-suggester": {
+      "source": "onewave-ai/claude-skills",
+      "sourceType": "github",
+      "computedHash": "03b9ac9b499f962f9676bbd669584c262becb77193646c30c2c14c20ca5b353f"
+    },
+    "landing-page-design": {
+      "source": "toolshell/skills",
+      "sourceType": "github",
+      "computedHash": "662298fcb24b3b32d2990d3dd22221ba3cce0d32c26bb178b398e9590dd8bc04"
+    },
+    "ui-ux-expert": {
+      "source": "martinholovsky/claude-skills-generator",
+      "sourceType": "github",
+      "computedHash": "c8d244c733101670bf2909f2af53d468380269cfc6172938dbaa97111a9848e1"
+    }
+  }
+}
